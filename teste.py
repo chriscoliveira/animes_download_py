@@ -8,17 +8,34 @@ from os import supports_follow_symlinks
 from time import sleep
 from playwright.sync_api import sync_playwright
 
-url = 'https://animesonline.club/play/serie/CG7A9TKJ5H01EFG'
 
+url = 'https://animesonline.club/anime/naruto-sd-rock-lee-no-seishun-full-power-ninden/episodio/41265'
+page = requests.get(url)
+soup = BeautifulSoup(page.text, 'html.parser')
+link = ''
 with sync_playwright() as p:
-    browser = p.firefox.launch(headless=True)
+    browser = p.chromium.launch(headless=True)
     page = browser.new_page()
+    # entra na pagina do anime
     page.goto(url)
-    page.screenshot(path="tela_anime.png")
+    player = page.inner_html('#Player1')
+    soup = BeautifulSoup(player, 'html.parser')
+    links = soup.find('iframe')
+    link = links.attrs['src']
+    print(f'link: nomral {link}')
+
+    # entra na pagina do video
+    page.goto(link)
+    URL = page.content()
+    soup = BeautifulSoup(URL, 'html.parser')
+    links = soup.find('iframe')
+    link = links.attrs['src']
+    print(f'link: iframe {link}')
+
+    # baixa o video
+    page.goto(link)
     URL = page.content()
     soup = BeautifulSoup(URL, 'html.parser')
     links = soup.find('video')
-    link = links.attrs['src']
-
-    r = requests.get(link, allow_redirects=True)
-    open('video.mp4', 'wb').write(r.content)
+    link_down = links.attrs['src']
+    print(link_down)

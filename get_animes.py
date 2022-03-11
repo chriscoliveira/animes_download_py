@@ -1,4 +1,4 @@
-
+import os
 from PyQt5.QtWidgets import QMainWindow, QApplication
 import sys
 from bs4 import BeautifulSoup
@@ -14,50 +14,76 @@ from PyQt5 import uic
 # carrega a UI
 app = QApplication([])
 window = uic.loadUi('layout_animes.ui')
+window.frame.setVisible(False)
+window.resize(500, 200)
 
 
 class Funcao(Thread):
     # declarar as variaveis que terão interação da funcao com a interface UI
-    def __init__(self, status, nome, inicio, fim):
+    def __init__(self, status, nome, inicio, fim, nome_completo):
         # variaveis que herdam os componentes
         self.status = status
         self.inicio = inicio
         self.fim = fim
         self.nome = nome
-
+        self.nome_completo = nome_completo
         super().__init__()
 
     def funcaoExibir(self):
+        # tenta criar a pasta para salvar o capitulo
+        try:
+            nome = str(self.nome_completo.currentItem().text()).split('/')[-1]
+            os.mkdir(str(nome).upper())
+            self.status.showMessage('Pasta criada com sucesso!')
+        except Exception as e:
+            pass
+
         print(f'{self.nome.text()} - {self.inicio.text()} - {self.fim.text()}')
+        self.status.showMessage('')
         with open('episodios.txt', 'r') as f:
             linhas = f.readlines()
             for linha in linhas:
                 linha = linha.replace('\n', '')
                 # print(linha)
                 link = linha.split(',')
-
-                try:
+                if link[0]:
                     if int(link[0]) >= int(self.inicio.text()) and int(link[0]) <= int(self.fim.text()):
-                        print(link[1])
-                        self.status.showMessage(
-                            f'Baixando o episódio {link[0]} de {self.nome.text()}')
+                        ep = link[0]
                         with sync_playwright() as p:
-                            browser = p.firefox.launch(headless=True)
+                            self.status.showMessage(
+                                'Capturando o link do video...')
+                            browser = p.chromium.launch(headless=True)
                             page = browser.new_page()
+                            # entra na pagina do anime
                             page.goto(link[1])
-                            print(link)
-                            # page.screenshot(path="tela_anime.png")
+                            player = page.inner_html('#Player1')
+                            soup = BeautifulSoup(player, 'html.parser')
+                            links = soup.find('iframe')
+                            link = links.attrs['src']
+
+                            # entra na pagina do video
+                            page.goto(link)
+                            URL = page.content()
+                            soup = BeautifulSoup(URL, 'html.parser')
+                            links = soup.find('iframe')
+                            link = links.attrs['src']
+
+                            # baixa o video
+                            page.goto(link)
                             URL = page.content()
                             soup = BeautifulSoup(URL, 'html.parser')
                             links = soup.find('video')
-                            link = links.attrs['src']
+                            link_down = links.attrs['src']
+                            print(link_down)
+
+                            # download
+                            r = requests.get(link_down, allow_redirects=True)
+                            print(f'{self.nome.text()}_{link[0]}.mp4')
                             self.status.showMessage(
-                                f'Baixando o episódio {link[0]} de {self.nome.text()}')
-                            r = requests.get(link, allow_redirects=True)
-                            open(f'{self.nome}_ep{link[0]}.mp4', 'wb').write(
+                                f'baixando {self.nome.text()}_{ep}.mp4')
+                            open(f'{nome}/{self.nome.text()}_{ep}.mp4', 'wb').write(
                                 r.content)
-                except Exception as e:
-                    print('erro' + str(e))
+                            self.status.showMessage('Download concluido!')
 
     def run(self):
         self.funcaoExibir()
@@ -65,6 +91,8 @@ class Funcao(Thread):
 
 class Animes:
     def pesquisa_animes(self, nome):
+        window.frame.setVisible(False)
+        window.resize(500, 200)
         url = 'https://animesonline.club/busca?q=' + nome
         # pega o html da pagina
         page = requests.get(url)
@@ -84,6 +112,9 @@ class Animes:
         #     window.lista_animes.addItem(i)
 
     def pesquisa_episodio(self, url):
+        window.frame.setVisible(True)
+        window.resize(500, 600)
+
         # variavel de controle para baixar os eps
         conteudo = []
         # pega o html da pagina
@@ -113,48 +144,9 @@ class Animes:
                     cont += 1
         return conteudo
 
-    def baixa_epsodio(self, nome, inicio, fim):
-        print(f'{nome} - {inicio} - {fim}')
-        with open('episodios.txt', 'r') as f:
-            linhas = f.readlines()
-            for linha in linhas:
-                linha = linha.replace('\n', '')
-                # print(linha)
-                link = linha.split(',')
-                if link[0]:
-                    if int(link[0]) >= int(inicio) and int(link[0]) <= int(fim):
-                        print(link[1])
-                        page = requests.get(link[1])
-                        soup = BeautifulSoup(page.text, 'html.parser')
-                        with sync_playwright() as p:
-                            browser = p.firefox.launch(headless=False)
-                            page = browser.new_page()
-                            page.goto(link[1])
-                            URL = page.content()
-                            # url = links.attrs['src']
-                            with open('code.txt', 'w') as z:
-                                z.write(page.content())
-
-                    # with sync_playwright() as p:
-                    #     browser = p.firefox.launch(headless=False)
-                    #     page = browser.new_page()
-                    #     page.goto(url)
-                    #     page.screenshot(path="tela_anime.png")
-                    #     # URL = page.content()
-                    #     # print(URL)
-                    #     # with open('code.txt', 'w') as z:
-                    #     #     z.write(URL)
-                    #     # soup = BeautifulSoup(URL, 'html.parser')
-                    #     # links = soup.find('video')
-                    #     # link_down = links.attrs['src']
-
-                    #     # r = requests.get(link_down, allow_redirects=True)
-                    #     # print(f'{nome}_{link[0]}.mp4')
-                    #     # open(f'nome.mp4', 'wb').write(r.content)
-
     def baixa_mp4(self):
         t = Funcao(window.statusbar, window.ed_nome,
-                   window.ed_inicio, window.ed_fim)
+                   window.ed_inicio, window.ed_fim, window.lista_animes)
         retorno = t.start()
 
 
@@ -168,18 +160,11 @@ window.bt_pesquisar.clicked.connect(
 window.lista_animes.doubleClicked.connect(
     lambda: A.pesquisa_episodio(window.lista_animes.currentItem().text()))
 
-# inicia o download do episodio
-# window.bt_baixar_eps.clicked.connect(
-#     lambda: A.baixa_epsodio(
-#         window.ed_nome.text(),
-#         window.ed_inicio.text(),
-#         window.ed_fim.text(),
-#         lista_episodios))
-window.bt_baixar_eps.clicked.connect(lambda: A.baixa_epsodio(
-    window.ed_nome.text(), window.ed_inicio.text(), window.ed_fim.text()))
-# window.bt_baixar_eps.clicked.connect(lambda: A.baixa_mp4())
+
+window.bt_baixar_eps.clicked.connect(lambda: A.baixa_mp4())
 
 # exibe o programa
+window.move(100, 100)
 window.show()
 app.exec()
 
