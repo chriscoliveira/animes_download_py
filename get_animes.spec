@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['get_animes.py'],
-             pathex=['Z:\\Christian\\Python\\GitHub\\animes_download_py'],
+             pathex=[],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -37,4 +37,4 @@ exe = EXE(pyz,
           disable_windowed_traceback=False,
           target_arch=None,
           codesign_identity=None,
-          entitlements_file=None )
+          entitlements_file=None , icon='icone.ico')

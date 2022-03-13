@@ -19,6 +19,9 @@
      <layout class="QGridLayout" name="gridLayout">
       <item row="1" column="0">
        <widget class="QLineEdit" name="ed_nome">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(255, 255, 255);</string>
+        </property>
         <property name="text">
          <string/>
         </property>
@@ -26,6 +29,9 @@
       </item>
       <item row="1" column="1">
        <widget class="QPushButton" name="bt_pesquisar">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(255, 255, 255);</string>
+        </property>
         <property name="text">
          <string>Pesquisar Anime</string>
         </property>
@@ -38,6 +44,9 @@
           <width>16777215</width>
           <height>150</height>
          </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(255, 255, 255);</string>
         </property>
        </widget>
       </item>
@@ -52,6 +61,9 @@
         <layout class="QGridLayout" name="gridLayout_3">
          <item row="2" column="3">
           <widget class="QLineEdit" name="ed_fim">
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(255, 255, 255);</string>
+           </property>
            <property name="text">
             <string>1</string>
            </property>
@@ -80,6 +92,9 @@
          </item>
          <item row="2" column="1">
           <widget class="QLineEdit" name="ed_inicio">
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(255, 255, 255);</string>
+           </property>
            <property name="text">
             <string>1</string>
            </property>
@@ -87,19 +102,38 @@
          </item>
          <item row="2" column="4">
           <widget class="QPushButton" name="bt_baixar_eps">
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(255, 255, 255);</string>
+           </property>
            <property name="text">
             <string>Baixar</string>
            </property>
           </widget>
          </item>
          <item row="1" column="0" colspan="5">
-          <widget class="QPlainTextEdit" name="lista_epsodios"/>
+          <widget class="QPlainTextEdit" name="lista_epsodios">
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(255, 255, 255);</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
       </item>
       <item row="0" column="0" colspan="2">
        <widget class="QLabel" name="label">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>15</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>500</width>
+          <height>15</height>
+         </size>
+        </property>
         <property name="text">
          <string>Pesquisar Animes</string>
         </property>

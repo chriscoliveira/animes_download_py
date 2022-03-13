@@ -1,21 +1,28 @@
 import os
-from PyQt5.QtWidgets import QMainWindow, QApplication
-import sys
-from bs4 import BeautifulSoup
-import requests
 import re
-from urllib.request import urlopen
-from playwright.sync_api import sync_playwright
 from threading import Thread
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
+
+import requests
 from PyQt5 import uic
+from PyQt5.QtWidgets import *
+from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
 
 # carrega a UI
 app = QApplication([])
 window = uic.loadUi('layout_animes.ui')
 window.frame.setVisible(False)
 window.resize(500, 200)
+window.setWindowTitle('AnimesOnline.Club by Christian2022')
+# window.setStyleSheet('background-image: url("fundo.png");')
+
+
+def deletar():
+    try:
+        os.remove('animes.txt')
+        os.remove('episodios.txt')
+    except FileNotFoundError:
+        pass
 
 
 class Funcao(Thread):
@@ -31,14 +38,18 @@ class Funcao(Thread):
 
     def funcaoExibir(self):
         # tenta criar a pasta para salvar o capitulo
+        nome = str(self.nome_completo.currentItem().text()).split('/')[-1]
         try:
-            nome = str(self.nome_completo.currentItem().text()).split('/')[-1]
-            os.mkdir(str(nome).upper())
-            self.status.showMessage('Pasta criada com sucesso!')
+            os.mkdir('Download')
+            self.status.showMessage('Pasta Download criada com sucesso!')
+        except Exception as e:
+            pass
+        try:
+            os.mkdir('Download/' + str(nome).upper())
+            self.status.showMessage(f'Pasta {nome} criada com sucesso!')
         except Exception as e:
             pass
 
-        print(f'{self.nome.text()} - {self.inicio.text()} - {self.fim.text()}')
         self.status.showMessage('')
         with open('episodios.txt', 'r') as f:
             linhas = f.readlines()
@@ -52,7 +63,9 @@ class Funcao(Thread):
                         with sync_playwright() as p:
                             self.status.showMessage(
                                 'Capturando o link do video...')
-                            browser = p.chromium.launch(headless=True)
+
+                            browser = p.chromium.launch(
+                                channel='chrome', headless=True)
                             page = browser.new_page()
                             # entra na pagina do anime
                             page.goto(link[1])
@@ -77,11 +90,12 @@ class Funcao(Thread):
                             print(link_down)
 
                             # download
-                            r = requests.get(link_down, allow_redirects=True)
-                            print(f'{self.nome.text()}_{link[0]}.mp4')
+                            r = requests.get(
+                                link_down, allow_redirects=True)
+                            print(f'{self.nome.text()}_{ep}.mp4')
                             self.status.showMessage(
-                                f'baixando {self.nome.text()}_{ep}.mp4')
-                            open(f'{nome}/{self.nome.text()}_{ep}.mp4', 'wb').write(
+                                f'baixando {nome}_{ep}.mp4')
+                            open(f'Download/{nome}/{nome}_{ep}.mp4', 'wb').write(
                                 r.content)
                             self.status.showMessage('Download concluido!')
 
@@ -160,14 +174,13 @@ window.bt_pesquisar.clicked.connect(
 window.lista_animes.doubleClicked.connect(
     lambda: A.pesquisa_episodio(window.lista_animes.currentItem().text()))
 
-
 window.bt_baixar_eps.clicked.connect(lambda: A.baixa_mp4())
 
+deletar()
 # exibe o programa
 window.move(100, 100)
 window.show()
 app.exec()
-
 
 # A.pesquisa_animes('naruto')
 # A.pesquisa_episodio('https://animesonline.club/anime/boruto-naruto-next-generations')
