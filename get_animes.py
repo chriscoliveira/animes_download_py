@@ -57,6 +57,9 @@ class Funcao(Thread):
                 linha = linha.replace('\n', '')
                 # print(linha)
                 link = linha.split(',')
+                for i in link:
+                    print(i)
+                    nomeep = i
                 if link[0]:
                     if int(link[0]) >= int(self.inicio.text()) and int(link[0]) <= int(self.fim.text()):
                         ep = link[0]
@@ -92,10 +95,10 @@ class Funcao(Thread):
                             # download
                             r = requests.get(
                                 link_down, allow_redirects=True)
-                            print(f'{self.nome.text()}_{ep}.mp4')
+                            print(f'{self.nome.text()}_{nomeep}.mp4')
                             self.status.showMessage(
-                                f'baixando {nome}_{ep}.mp4')
-                            open(f'Download/{nome}/{nome}_{ep}.mp4', 'wb').write(
+                                f'baixando {nome}_{nomeep}.mp4')
+                            open(f'Download/{nome}/{nome}_{nomeep}.mp4', 'wb').write(
                                 r.content)
                             self.status.showMessage('Download concluido!')
 
@@ -143,16 +146,19 @@ class Animes:
         tipos = soup.find_all('div', class_='temporada-modo')
         window.lista_epsodios.clear()
         with open('episodios.txt', 'w') as f:
-            cont = 1
+            cont = 0
             for tipo in tipos:
                 versao = tipo.text.split('(')
                 quantidade = int(versao[1][:-1])
                 versao = versao[0]
                 window.lista_epsodios.insertPlainText(
                     f'{versao} - {quantidade} episódios\n')
+                dub = versao.split(' ')
 
                 for i in range(quantidade):
-                    f.write(f'\n{cont}, {epsodios[i].get("href")}')
+                    nome = str(nomes[cont].text).replace('ó', 'o')
+                    f.write(
+                        f'\n{cont}, {epsodios[cont].get("href")}, {dub[1]} {nome}')
                     window.lista_epsodios.insertPlainText(
                         f'{cont} - {nomes[i].text}\n')
                     cont += 1
