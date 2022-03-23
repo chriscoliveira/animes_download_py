@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['get_animes.py'],
-             pathex=[],
+             pathex=['Z:\\Christian\\Python\\GitHub\\animes_download_py'],
              binaries=[],
              datas=[],
              hiddenimports=[],
