@@ -21,6 +21,10 @@ def deletar():
     try:
         os.remove('animes.txt')
         os.remove('episodios.txt')
+        os.remove('episodios_final.txt')
+        os.remove('animes.txt')
+        os.remove('conteudo.txt')
+        os.remove('conteudo_final.txt')
     except FileNotFoundError:
         pass
 
@@ -101,12 +105,7 @@ class Funcao(Thread):
                             open(f'Download/{nome}/{nome}_{nomeep}.mp4', 'wb').write(
                                 r.content)
                             self.status.showMessage('Download concluido!')
-        os.remove('episodios_final.txt')
-        os.remove('animes.txt')
-        os.remove('episodios.txt')
-        os.remove('episodios_final.txt')
-        os.remove('conteudo.txt')
-        os.remove('conteudo_final.txt')
+        deletar()
 
     def run(self):
         self.funcaoExibir()
