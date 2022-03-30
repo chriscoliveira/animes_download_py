@@ -21,13 +21,32 @@ window.setWindowTitle('AnimesOnline.Club by Christian2022')
 def deletar():
     try:
         os.remove('animes.txt')
+    except FileNotFoundError as e:
+        print(e)
+    try:
         os.remove('episodios.txt')
+    except FileNotFoundError as e:
+        print(e)
+    try:
         os.remove('episodios_final.txt')
+    except FileNotFoundError as e:
+        print(e)
+    try:
         os.remove('animes.txt')
+    except FileNotFoundError as e:
+        print(e)
+    try:
         os.remove('conteudo.txt')
+    except FileNotFoundError as e:
+        print(e)
+    try:
         os.remove('conteudo_final.txt')
-    except FileNotFoundError:
-        pass
+    except FileNotFoundError as e:
+        print(e)
+    try:
+        os.remove('html.txt')
+    except FileNotFoundError as e:
+        print(e)
 
 
 class Funcao(Thread):
@@ -44,6 +63,8 @@ class Funcao(Thread):
     def funcaoExibir(self):
         # tenta criar a pasta para salvar o capitulo
         nome = str(self.nome_completo.currentItem().text()).split('/')[-1]
+        nome = nome.replace('-', ' ').replace('_', ' ').replace('.',
+                                                                ' ').replace('  ', ' ').replace('  ', ' ')
         try:
             os.mkdir('Download')
             self.status.showMessage('Pasta Download criada com sucesso!')
@@ -63,10 +84,11 @@ class Funcao(Thread):
                 # print(linha)
                 link = linha.split(',')
                 for i in link:
-                    # print(i)
-                    nomeep = i.replace('   ', ' ').replace('\xa0', '')
+                    print(i, link)
+                    nomeep = i.replace('   ', ' ')
                 if link[0]:
                     if int(link[0]) >= int(self.inicio.text()) and int(link[0]) <= int(self.fim.text()):
+
                         ep = link[0]
                         print(ep)
                         with sync_playwright() as p:
@@ -95,6 +117,7 @@ class Funcao(Thread):
                             link = str(link).replace(
                                 "b'http", 'http').replace("'", "")
                             print('decode '+link)
+                            link = link.split('\\')[0]
                             # entra na pagina do video
                             page.goto(link)
                             URL = page.content()
@@ -116,9 +139,10 @@ class Funcao(Thread):
                             print(f'{self.nome.text()}_{nomeep}.mp4')
                             self.status.showMessage(
                                 f'baixando {nome}_{nomeep}.mp4')
-                            open(f'Download/{nome}/{nome}_{nomeep}.mp4', 'wb').write(
+                            open(f'Download/{nome.upper()}/{nome.upper()} {nomeep}.mp4', 'wb').write(
                                 r.content)
                             self.status.showMessage('Download concluido!')
+                            page.close()
         deletar()
 
     def run(self):
@@ -195,6 +219,7 @@ class Animes:
             page.goto(url)
             player = page.inner_html('#episodios')
             soup = BeautifulSoup(player, 'html.parser')
+            page.close()
             conteudo = soup.text
             with open('html.txt', 'w', encoding='utf-8') as f:
                 f.write(soup.prettify())
@@ -246,9 +271,16 @@ class Animes:
                     for i in conteudo:
                         if 'Ep.' in i:
                             texto = i.split(' ')
-                            f.write(f'{cont},{texto[1]} {texto[2]}')
-                            window.lista_epsodios.insertPlainText(
-                                f'{cont} - {texto[1]} {texto[2]}')
+
+                            try:
+                                f.write(f'{cont},{texto[1]} {texto[2]}')
+                                window.lista_epsodios.insertPlainText(
+                                    f'{cont} - {texto[1]} {texto[2]}')
+                            except:
+                                f.write(f'{cont},{texto[1]},"_"')
+                                window.lista_epsodios.insertPlainText(
+                                    f'{cont} - {texto[1]} ')
+
                             cont += 1
                         else:
                             f.write(i)
@@ -273,6 +305,7 @@ class Animes:
                                     # , tipo, sep='|')
                                     dub = i.split(',')[1]
                                     numerospi = dub.split(' ')[0]
+                                    nomeepi = nomeepi.replace('\n', '')
                                     linha = f'{cap}, {link}, {nomeepi} {idioma} {dub}'
                                     f.write(linha.replace('   ', ' '))
                                 except:
