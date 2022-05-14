@@ -76,7 +76,9 @@ class Funcao(Thread):
                             page = browser.new_page()
                             # entra na pagina do anime
                             page.goto(link[1])
-                            player = page.inner_html('#Player1')
+                            player = page.inner_html('#player-video')
+                            with open('html.txt', 'w', encoding='utf-8') as f:
+                                f.write(player)
                             soup = BeautifulSoup(player, 'html.parser')
                             links = soup.find('iframe')
                             link = links.attrs['src']
@@ -297,3 +299,4 @@ app.exec()
 # A.pesquisa_animes('naruto')
 # A.pesquisa_episodio('https://animesonline.club/anime/boruto-naruto-next-generations')
 # A.baixa_epsodio('https://animesonline.club/anime/boruto-naruto-next-generations/episodio/54943')
+# https://blog.ahnoticias.com/noticia.php?token=aHR0cHM6Ly9hbmltZXNvbmxpbmUuY2x1Yi9wbGF5ZXIvMzAvSkVTTVNUQlFBSg==&origin=aHR0cHM6Ly9hbmltZXNvbmxpbmUuY2x1Yi9hbmltZS9uYXJ1dG8tc2hpcHB1ZGVuL2VwaXNvZGlvLzM2MzQ=

@@ -1,3 +1,5 @@
+# compile com o comando
+# venv\Scripts\pyinstaller.exe -F --console -w --upx-dir=Z:\Christian\Python\GitHub\upx-3.96-win64\upx-3.96-win64 --ico .\icone.ico --name "AnimesOnline.Club Downloader" .\get_animes_v2.py
 import os
 import re
 from threading import Thread
@@ -8,59 +10,34 @@ from PyQt5.QtWidgets import *
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 import base64
+from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QMainWindow, QApplication
+from layout_animes import *
+import sys
 
-# carrega a UI
-app = QApplication([])
-window = uic.loadUi('layout_animes.ui')
-window.frame.setVisible(False)
-window.resize(500, 200)
-window.setWindowTitle('AnimesOnline.Club by Christian2022')
-# window.setStyleSheet('background-image: url("fundo.png");')
-
-
-def deletar():
-    try:
-        os.remove('animes.txt')
-    except FileNotFoundError as e:
-        print(e)
-    try:
-        os.remove('episodios.txt')
-    except FileNotFoundError as e:
-        print(e)
-    try:
-        os.remove('episodios_final.txt')
-    except FileNotFoundError as e:
-        print(e)
-    try:
-        os.remove('animes.txt')
-    except FileNotFoundError as e:
-        print(e)
-    try:
-        os.remove('conteudo.txt')
-    except FileNotFoundError as e:
-        print(e)
-    try:
-        os.remove('conteudo_final.txt')
-    except FileNotFoundError as e:
-        print(e)
-    try:
-        os.remove('html.txt')
-    except FileNotFoundError as e:
-        print(e)
+# # carrega a UI
+# app = QApplication([])
+# window = uic.loadUi('layout_animes.ui')
+# self.frame.setVisible(False)
+# self.resize(500, 200)
+# self.setWindowTitle('AnimesOnline.Club by Christian2022')
+# self.setStyleSheet('background-image: url("fundo.png");')
 
 
 class Funcao(Thread):
     # declarar as variaveis que terão interação da funcao com a interface UI
-    def __init__(self, status, nome, inicio, fim, nome_completo):
+    def __init__(self, status, nome, inicio, fim, nome_completo, botaoAbrePasta):
         # variaveis que herdam os componentes
         self.status = status
         self.inicio = inicio
         self.fim = fim
         self.nome = nome
         self.nome_completo = nome_completo
+        self.botaoAbrePasta = botaoAbrePasta
         super().__init__()
 
     def funcaoExibir(self):
+        self.botaoAbrePasta.setEnabled(False)
         # tenta criar a pasta para salvar o capitulo
         nome = str(self.nome_completo.currentItem().text()).split('/')[-1]
         nome = nome.replace('-', ' ').replace('_', ' ').replace('.',
@@ -143,16 +120,97 @@ class Funcao(Thread):
                                 r.content)
                             self.status.showMessage('Download concluido!')
                             page.close()
-        deletar()
+        self.deletar()
+        self.abrePasta()
+        self.botaoAbrePasta.setEnabled(True)
+
+    def abrePasta(self):
+        # pega a pasta atual
+        pasta = os.getcwd()
+        # abre a pasta
+        os.startfile(pasta+'\\Download')
+        # abre a pasta de download
+        # os.startfile(os.getcwd("Download"))
+
+    def deletar(self):
+        try:
+            os.remove('animes.txt')
+        except FileNotFoundError as e:
+            print(e)
+        try:
+            os.remove('episodios.txt')
+        except FileNotFoundError as e:
+            print(e)
+        try:
+            os.remove('episodios_final.txt')
+        except FileNotFoundError as e:
+            print(e)
+        try:
+            os.remove('animes.txt')
+        except FileNotFoundError as e:
+            print(e)
+        try:
+            os.remove('conteudo.txt')
+        except FileNotFoundError as e:
+            print(e)
+        try:
+            os.remove('conteudo_final.txt')
+        except FileNotFoundError as e:
+            print(e)
+        try:
+            os.remove('html.txt')
+        except FileNotFoundError as e:
+            print(e)
 
     def run(self):
         self.funcaoExibir()
 
 
-class Animes:
+class Novo(QMainWindow, Ui_MainWindow):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        super().setupUi(self)
+
+        try:
+            os.mkdir('Download')
+        except Exception as e:
+            pass
+
+        self.frame.setVisible(False)
+        # self.resize(600, 200)
+        self.setWindowTitle('AnimesOnline.Club by Christian2022')
+        self.label_fundo.setStyleSheet(
+            "background-image: url('fundo.png'); width: 100%; height: 100%;")
+        # pesquisa o anime com o nome passado
+        self.bt_pesquisar.clicked.connect(
+            lambda: self.pesquisa_animes(self.ed_nome.text()))
+
+        # com 2 cliques no anime, pega os episodios
+        self.lista_animes.doubleClicked.connect(
+            lambda: self.pesquisaepi(self.lista_animes.currentItem().text()))
+
+        self.bt_baixar_eps.clicked.connect(lambda: self.baixa_mp4())
+
+        self.bt_abre_pasta.clicked.connect(self.abrePasta)
+
+        self.ed_nome.returnPressed.connect(
+            lambda: self.pesquisa_animes(self.ed_nome.text()))
+        self.deletar()
+        # exibe o programa
+        self.move(100, 100)
+        self.show()
+
+    def abrePasta(self):
+        # pega a pasta atual
+        pasta = os.getcwd()
+        # abre a pasta
+        os.startfile(pasta+'\\Download')
+        # abre a pasta de download
+        # os.startfile(os.getcwd("Download"))
+
     def pesquisa_animes(self, nome):
-        window.frame.setVisible(False)
-        window.resize(500, 200)
+        self.frame.setVisible(False)
+        # self.resize(500, 200)
         url = 'https://animesonline.club/busca?q=' + nome
         # pega o html da pagina
         page = requests.get(url)
@@ -165,15 +223,15 @@ class Animes:
 
             # for link in soup.find_all('a', href=re.compile('/filme/')):
             #     filme.append(link.get('href'))
-        window.lista_animes.clear()
+        self.lista_animes.clear()
         for i in anime:
-            window.lista_animes.addItem(i)
+            self.lista_animes.addItem(i)
         # for i in filme:
-        #     window.lista_animes.addItem(i)
+        #     self.lista_animes.addItem(i)
 
     def pesquisa_episodio(self, url):
-        window.frame.setVisible(True)
-        window.resize(500, 600)
+        self.frame.setVisible(True)
+        # self.resize(500, 600)
 
         # variavel de controle para baixar os eps
         conteudo = []
@@ -187,14 +245,14 @@ class Animes:
         nomes = soup.find_all('span', class_='nome')
         # pega o tipo dublado ou legendado + quantidade de episodios
         tipos = soup.find_all('div', class_='temporada-modo')
-        window.lista_epsodios.clear()
+        self.lista_epsodios.clear()
         with open('episodios_final.txt', 'w') as f:
             cont = 0
             for tipo in tipos:
                 versao = tipo.text.split('(')
                 quantidade = int(versao[1][:-1])
                 versao = versao[0]
-                window.lista_epsodios.insertPlainText(
+                self.lista_epsodios.insertPlainText(
                     f'{versao} - {quantidade} episódios\n')
                 dub = versao.split(' ')
 
@@ -202,14 +260,14 @@ class Animes:
                     nome = str(nomes[cont].text)  # .replace('ó', 'o')
                     f.write(
                         f'\n{cont}, {epsodios[cont].get("href")}, {dub[1]} {nome}')
-                    window.lista_epsodios.insertPlainText(
+                    self.lista_epsodios.insertPlainText(
                         f'{cont} - {nomes[i].text}\n')
                     cont += 1
         return conteudo
 
     def pesquisaepi(self, url):
-        window.frame.setVisible(True)
-        window.resize(500, 600)
+        self.frame.setVisible(True)
+        # self.resize(500, 600)
 
         with sync_playwright() as p:
             browser = p.chromium.launch(
@@ -238,7 +296,7 @@ class Animes:
             # pega o tipo dublado ou legendado + quantidade de episodios
             tipos = soup.find_all('div', class_='temporada-modo')
             #
-            # window.lista_epsodios.clear()
+            # self.lista_epsodios.clear()
             #
             # abre o conteudo.txt
             with open('conteudo.txt', 'r', encoding='utf-8') as contxt:
@@ -252,7 +310,7 @@ class Animes:
                         # print('quantidade: ', quantidade)
                         versao = versao[0]
                         # print('versao[0]: ', versao)
-                        # window.lista_epsodios.insertPlainText(
+                        # self.lista_epsodios.insertPlainText(
                         #     f'{versao} - {quantidade} episódios\n')
                         dub = versao.split(' ')
 
@@ -260,7 +318,7 @@ class Animes:
                             nome = str(nomes[cont].text).replace('ó', 'o')
                             f.write(
                                 f'{cont}, {epsodios[cont].get("href")}, {dub[1]} \n')
-                            # window.lista_epsodios.insertPlainText(
+                            # self.lista_epsodios.insertPlainText(
                             #     f'{cont} - {nomes[i].text}\n')
                             # print(f'{cont} - {nomes[i].text}\n')
                             cont += 1
@@ -274,17 +332,17 @@ class Animes:
 
                             try:
                                 f.write(f'{cont},{texto[1]} {texto[2]}')
-                                window.lista_epsodios.insertPlainText(
+                                self.lista_epsodios.insertPlainText(
                                     f'{cont} - {texto[1]} {texto[2]}')
                             except:
                                 f.write(f'{cont},{texto[1]},"_"')
-                                window.lista_epsodios.insertPlainText(
+                                self.lista_epsodios.insertPlainText(
                                     f'{cont} - {texto[1]} ')
 
                             cont += 1
                         else:
                             f.write(i)
-                            window.lista_epsodios.insertPlainText(i)
+                            self.lista_epsodios.insertPlainText(i)
 
                 # junta os 2 txt
                 with open('episodios.txt', 'r') as eps:
@@ -319,29 +377,46 @@ class Animes:
                                             'Legendado', '')
 
     def baixa_mp4(self):
-        t = Funcao(window.statusbar, window.ed_nome,
-                   window.ed_inicio, window.ed_fim, window.lista_animes)
+        t = Funcao(self.statusbar, self.ed_nome,
+                   self.ed_inicio, self.ed_fim, self.lista_animes, self.bt_abre_pasta)
         retorno = t.start()
 
+    def deletar(self):
+        try:
+            os.remove('animes.txt')
+        except FileNotFoundError as e:
+            print(e)
+        try:
+            os.remove('episodios.txt')
+        except FileNotFoundError as e:
+            print(e)
+        try:
+            os.remove('episodios_final.txt')
+        except FileNotFoundError as e:
+            print(e)
+        try:
+            os.remove('animes.txt')
+        except FileNotFoundError as e:
+            print(e)
+        try:
+            os.remove('conteudo.txt')
+        except FileNotFoundError as e:
+            print(e)
+        try:
+            os.remove('conteudo_final.txt')
+        except FileNotFoundError as e:
+            print(e)
+        try:
+            os.remove('html.txt')
+        except FileNotFoundError as e:
+            print(e)
 
-A = Animes()
-
-# pesquisa o anime com o nome passado
-window.bt_pesquisar.clicked.connect(
-    lambda: A.pesquisa_animes(window.ed_nome.text()))
-
-# com 2 cliques no anime, pega os episodios
-window.lista_animes.doubleClicked.connect(
-    lambda: A.pesquisaepi(window.lista_animes.currentItem().text()))
-
-window.bt_baixar_eps.clicked.connect(lambda: A.baixa_mp4())
-
-deletar()
-# exibe o programa
-window.move(100, 100)
-window.show()
-app.exec()
 
 # A.pesquisa_animes('naruto')
 # A.pesquisa_episodio('https://animesonline.club/anime/boruto-naruto-next-generations')
 # A.baixa_epsodio('https://animesonline.club/anime/boruto-naruto-next-generations/episodio/54943')
+qt = QApplication(sys.argv)
+
+novo = Novo()
+novo.show()
+qt.exec_()
