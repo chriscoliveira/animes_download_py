@@ -177,7 +177,8 @@ class Novo(QMainWindow, Ui_MainWindow):
             pass
 
         self.frame.setVisible(False)
-        # self.resize(600, 200)
+
+        self.baixarFundo()
         self.setWindowTitle('AnimesOnline.Club by Christian2022')
         self.label_fundo.setStyleSheet(
             "background-image: url('fundo.png'); width: 100%; height: 100%;")
@@ -200,6 +201,14 @@ class Novo(QMainWindow, Ui_MainWindow):
         self.move(100, 100)
         self.show()
 
+    def baixarFundo(self):
+        try:
+            r = requests.get(
+                'https://github.com/chriscoliveira/animes_download_py/blob/59da6d35cbb2f89e0c5c7ac6cc00dcb49bd13652/dist/fundo.png?raw=true')
+            open('fundo.png', 'wb').write(r.content)
+        except Exception as e:
+            print(e)
+            
     def abrePasta(self):
         # pega a pasta atual
         pasta = os.getcwd()
